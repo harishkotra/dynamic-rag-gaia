@@ -16,12 +16,14 @@ DynamicRAG is a React-based web application that implements a dynamic Retrieval-
 - Dynamic vector database creation using Qdrant
 - Batch processing of large text inputs
 - Integration with a local Gaia node
+- GitHub repository analysis using GitIngest
 - Progress tracking and error handling
 - Clean, responsive UI using Tailwind CSS and shadcn/ui components
 
 ## Prerequisites
 
 - Node.js (v16 or higher)
+- Python (for GitIngest installation)
 - A running Qdrant instance (local or remote)
 - A local LLM server through Gaia running on port 8080 (Tutorial: [https://docs.gaianet.ai/node-guide/quick-start](https://docs.gaianet.ai/node-guide/quick-start))
 - The `nomic-embed` embedding model (auto-downloaded in `gaianet` folder when the Gaia CLI is installed)
@@ -40,23 +42,31 @@ cd dynamic-rag
 npm install
 ```
 
-3. Ensure your Qdrant server is running and accessible at http://localhost:6333
-4. Ensure your Gaia node is running and accessible at http://localhost:8080 (Tutorial: [https://docs.gaianet.ai/node-guide/quick-start](https://docs.gaianet.ai/node-guide/quick-start))
-5. Start the development server:
+3. Install GitIngest:
+```
+pip install gitingest
+```
+
+4. Ensure your Qdrant server is running and accessible at http://localhost:6333
+5. Ensure your Gaia node is running and accessible at http://localhost:8080 (Tutorial: [https://docs.gaianet.ai/node-guide/quick-start](https://docs.gaianet.ai/node-guide/quick-start))
+6. Start the development server:
 ```
 npm run dev
 ```
 
 ## Usage
 
-1. Input Text: Paste your knowledge base text into the input textarea.
+1. Choose Input Mode:
+    - Text Input: Paste your knowledge base text into the input textarea
+    - GitHub Repository: Enter a GitHub repository URL to analyze its contents
 2. Ask Questions: Enter your query in the question field.
 3. Process: Click "Submit" to process your query. The system will:
-    - Split the input text into manageable chunks
+    - For text input: Split the input text into manageable chunks
+    - For GitHub repos: Fetch and process repository content using GitIngest
     - Create embeddings for each chunk
     - Store embeddings in a temporary Qdrant collection
     - Find relevant context using vector similarity search
-    - Generate an answer using the LLM
+    - Generate an answer using the local Gaia Node
 4. View Results: The system will display the generated response based on the relevant context found.
 
 ## Technical Details
@@ -79,10 +89,13 @@ npm run dev
 - Supports both embeddings and chat completion endpoints
 - Uses the `nomic-embed` model for embeddings
 - Uses the `llama` model for text generation
+- Integrates with GitIngest for repository analysis
+- NextJS API routes for command-line tool integration
 
 ### Components
 
 - `DynamicRAG.js`: Main component implementing the RAG system
+- `app/api/gitingest/route.js`: API route for GitHub repository processing
 - Input handling and validation
 - Progress tracking and error display
 - Vector database management
@@ -92,6 +105,7 @@ npm run dev
 The system includes comprehensive error handling for:
 
 - Text processing failures
+- GitHub repository fetch and analysis errors
 - Embedding creation errors
 - Vector database operations
 - LLM query failures
