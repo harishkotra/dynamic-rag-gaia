@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# DynamicRAG
 
-## Getting Started
+DynamicRAG is a React-based web application that implements a dynamic Retrieval-Augmented Generation (RAG) system. It allows users to input text, process it into embeddings, and perform question-answering tasks using a combination of vector search and Large Language Models.
 
-First, run the development server:
+## Features
 
+- Real-time text processing and chunking
+- Dynamic vector database creation using Qdrant
+- Batch processing of large text inputs
+- Integration with local LLM API
+- Progress tracking and error handling
+- Clean, responsive UI using Tailwind CSS and shadcn/ui components
+
+## Prerequisites
+
+- Node.js (v16 or higher)
+- A running Qdrant instance (local or remote)
+- A local LLM server running on port 8080
+- The `nomic-embed` embedding model
+- The `llama` language model
+
+## Setup
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd dynamic-rag
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```
+npm install
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+3. Ensure your Qdrant server is running and accessible at http://localhost:6333
+4. Ensure your LLM server is running and accessible at http://localhost:8080
+5. Start the development server:
+```
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Usage
 
-## Learn More
+1. Input Text: Paste your knowledge base text into the input textarea.
+2. Ask Questions: Enter your query in the question field.
+3. Process: Click "Submit" to process your query. The system will:
+    - Split the input text into manageable chunks
+    - Create embeddings for each chunk
+    - Store embeddings in a temporary Qdrant collection
+    - Find relevant context using vector similarity search
+    - Generate an answer using the LLM
+4. View Results: The system will display the generated response based on the relevant context found.
 
-To learn more about Next.js, take a look at the following resources:
+## Technical Details
+### Text Processing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Maximum chunk size: 2000 characters
+- Batch processing size: 3 chunks at a time
+- Chunks are created based on natural text boundaries (paragraphs and sentences)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Vector Database
 
-## Deploy on Vercel
+- Uses Qdrant for vector storage and similarity search
+- Creates temporary collections for each query session
+- Automatically cleans up collections after use
+- Uses 768-dimensional vectors for embeddings
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### API Integration
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Compatible with OpenAI-style API endpoints
+- Supports both embeddings and chat completion endpoints
+- Uses the `nomic-embed` model for embeddings
+- Uses the `llama` model for text generation
+
+### Components
+
+- `DynamicRAG.js`: Main component implementing the RAG system
+- Input handling and validation
+- Progress tracking and error display
+- Vector database management
+- LLM integration
+
+### Error Handling
+The system includes comprehensive error handling for:
+
+- Text processing failures
+- Embedding creation errors
+- Vector database operations
+- LLM query failures
+- Network issues
+
+### Dependencies
+
+- React
+- Tailwind CSS
+- shadcn/ui components
+- Lodash for utility functions
+- Various UI components (@/components/ui/*)
+
+### Contributing
+
+- Fork the repository
+- Create a feature branch
+- Make your changes
+- Submit a pull request
