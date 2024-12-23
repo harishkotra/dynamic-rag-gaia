@@ -25,7 +25,7 @@ DynamicRAG is a React-based web application that implements a dynamic Retrieval-
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/harishkotra/dynamic-rag-gaia
 cd dynamic-rag
 ```
 
