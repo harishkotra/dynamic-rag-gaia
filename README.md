@@ -2,7 +2,13 @@
 
 DynamicRAG is a React-based web application that implements a dynamic Retrieval-Augmented Generation (RAG) system. It allows users to input text, process it into embeddings, and perform question-answering tasks using a combination of vector search and Large Language Models.
 
+## Screenshots
+
+#### Input text based Dynamic RAG
 ![screencapture-localhost-3000-2024-12-24-00_55_11](https://github.com/user-attachments/assets/b9ccb3b8-590a-4080-9297-03ff79ea1d86)
+
+#### Github Repo to Dynamic RAG
+<img width="889" alt="image" src="https://github.com/user-attachments/assets/cbf14066-4a74-4621-85a6-6bcc6c5b56f5" />
 
 ## Features
 
