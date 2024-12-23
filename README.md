@@ -9,7 +9,7 @@ DynamicRAG is a React-based web application that implements a dynamic Retrieval-
 - Real-time text processing and chunking
 - Dynamic vector database creation using Qdrant
 - Batch processing of large text inputs
-- Integration with local LLM API
+- Integration with a local Gaia node
 - Progress tracking and error handling
 - Clean, responsive UI using Tailwind CSS and shadcn/ui components
 
@@ -17,9 +17,9 @@ DynamicRAG is a React-based web application that implements a dynamic Retrieval-
 
 - Node.js (v16 or higher)
 - A running Qdrant instance (local or remote)
-- A local LLM server running on port 8080
-- The `nomic-embed` embedding model
-- The `llama` language model
+- A local LLM server through Gaia running on port 8080 (Tutorial: [https://docs.gaianet.ai/node-guide/quick-start](https://docs.gaianet.ai/node-guide/quick-start))
+- The `nomic-embed` embedding model (auto-downloaded in `gaianet` folder when the Gaia CLI is installed)
+- The `llama 3.2` language model (auto-downloaded in `gaianet` folder when the Gaia CLI is installed. You can replace the model depending on your use-case)
 
 ## Setup
 
@@ -35,7 +35,7 @@ npm install
 ```
 
 3. Ensure your Qdrant server is running and accessible at http://localhost:6333
-4. Ensure your LLM server is running and accessible at http://localhost:8080
+4. Ensure your Gaia node is running and accessible at http://localhost:8080 (Tutorial: [https://docs.gaianet.ai/node-guide/quick-start](https://docs.gaianet.ai/node-guide/quick-start))
 5. Start the development server:
 ```
 npm run dev
