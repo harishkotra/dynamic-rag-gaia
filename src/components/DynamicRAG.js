@@ -11,12 +11,14 @@ const MAX_CHUNK_SIZE = 2000; // Maximum characters per chunk
 const BATCH_SIZE = 3; // Number of chunks to process at once
 
 const DynamicRAG = () => {
-  const [inputText, setInputText] = useState('');
-  const [query, setQuery] = useState('');
-  const [response, setResponse] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [progress, setProgress] = useState('');
+    const [inputText, setInputText] = useState('');
+    const [repoUrl, setRepoUrl] = useState('');
+    const [query, setQuery] = useState('');
+    const [response, setResponse] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [progress, setProgress] = useState('');
+    const [inputMode, setInputMode] = useState('text'); // 'text' or 'repo'
 
   // Function to detect if text is likely code
   const isCodeBlock = (text) => {
@@ -147,7 +149,7 @@ const DynamicRAG = () => {
   // Process chunks in batches
   const processBatch = async (chunks, startIdx) => {
     const batchChunks = chunks.slice(startIdx, startIdx + BATCH_SIZE);
-    console.log('Processing batch chunks:', batchChunks);
+    //console.log('Processing batch chunks:', batchChunks);
     
     try {
       const embeddingResponse = await fetch('http://localhost:8080/v1/embeddings', {
@@ -166,11 +168,11 @@ const DynamicRAG = () => {
       }
       
       const embeddings = await embeddingResponse.json();
-      console.log('Embedding response:', embeddings);
+      //console.log('Embedding response:', embeddings);
 
       const results = batchChunks.map((chunk, i) => {
         if (!embeddings.data[i]) {
-          console.error('Missing embedding for chunk:', i, chunk);
+          //console.error('Missing embedding for chunk:', i, chunk);
           return null;
         }
         return {
@@ -179,13 +181,36 @@ const DynamicRAG = () => {
         };
       }).filter(item => item !== null);
 
-      console.log('Processed batch results:', results);
+      //console.log('Processed batch results:', results);
       return results;
     } catch (err) {
-      console.error('Batch processing error:', err);
+      //console.error('Batch processing error:', err);
       throw new Error(`Failed to process batch: ${err.message}`);
     }
 };
+
+const fetchGitRepo = async (url) => {
+    try {
+      setProgress('Fetching repository content...');
+      const response = await fetch('/api/gitingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ repoUrl: url })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        //console.error('GitIngest error:', errorData);
+        throw new Error(errorData.error || 'Failed to fetch repository content');
+      }
+      
+      const data = await response.json();
+      return data.content;
+    } catch (err) {
+      console.error('Full error:', err);
+      throw new Error(`Failed to fetch repository: ${err.message}`);
+    }
+  };
 
   // Create temporary snapshot from embeddings
   const createSnapshot = async (embeddingsData) => {
@@ -252,9 +277,17 @@ const DynamicRAG = () => {
     let collectionName = null;
 
     try {
+
+        // Get content either from direct input or from GitHub
+        let textToProcess;
+        if (inputMode === 'repo') {
+            textToProcess = await fetchGitRepo(repoUrl);
+        } else {
+            textToProcess = inputText;
+        }
       // Split input text into chunks
       setProgress('Splitting text into chunks...');
-      const chunks = createChunks(inputText);
+      const chunks = createChunks(textToProcess);
       console.log('Created chunks:', chunks);
       
       const totalChunks = chunks.length;
@@ -269,7 +302,7 @@ const DynamicRAG = () => {
         }
       }
 
-      console.log('All processed embeddings:', processedEmbeddings);
+      //console.log('All processed embeddings:', processedEmbeddings);
 
       if (processedEmbeddings.length === 0) {
         throw new Error('No embeddings were successfully created');
@@ -291,7 +324,7 @@ const DynamicRAG = () => {
       });
 
       const queryEmbedding = await queryEmbeddingResponse.json();
-      console.log('Query embedding:', queryEmbedding);
+      //console.log('Query embedding:', queryEmbedding);
 
       // Search for relevant context
       const searchPayload = {
@@ -300,7 +333,7 @@ const DynamicRAG = () => {
         with_payload: true,  // Explicitly request payload to be returned
         with_vector: false   // We don't need the vectors back
       };
-      console.log('Search payload:', searchPayload);
+      //console.log('Search payload:', searchPayload);
       
       const searchResponse = await fetch(`http://localhost:6333/collections/${collectionName}/points/search`, {
         method: 'POST',
@@ -315,7 +348,7 @@ const DynamicRAG = () => {
       }
       
       const searchResults = await searchResponse.json();
-      console.log('Got search results:', searchResults);
+      //console.log('Got search results:', searchResults);
 
         // Add error checking and fallbacks for search results
         const context = searchResults.result && Array.isArray(searchResults.result)
@@ -362,6 +395,22 @@ const DynamicRAG = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+          <div className="flex space-x-4 mb-4">
+            <Button
+              variant={inputMode === 'text' ? 'default' : 'outline'}
+              onClick={() => setInputMode('text')}
+            >
+              Direct Text Input
+            </Button>
+            <Button
+              variant={inputMode === 'repo' ? 'default' : 'outline'}
+              onClick={() => setInputMode('repo')}
+            >
+              GitHub Repository
+            </Button>
+          </div>
+
+          {inputMode === 'text' ? (
             <div>
               <label className="block mb-2 text-sm font-medium">Input Text</label>
               <textarea
@@ -371,22 +420,35 @@ const DynamicRAG = () => {
                 placeholder="Paste your knowledge base text here..."
               />
             </div>
+          ) : (
+            <div>
+              <label className="block mb-2 text-sm font-medium">GitHub Repository URL</label>
+              <Input
+                value={repoUrl}
+                onChange={(e) => setRepoUrl(e.target.value)}
+                placeholder="https://github.com/username/repository"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                Enter the full GitHub repository URL to analyze its content
+              </p>
+            </div>
+          )}
 
             <div>
-              <label className="block mb-2 text-sm font-medium">Query</label>
-              <div className="flex space-x-2">
+                <label className="block mb-2 text-sm font-medium">Query</label>
+                <div className="flex space-x-2">
                 <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Enter your question..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Enter your question..."
                 />
                 <Button 
-                  onClick={handleSubmit}
-                  disabled={loading || !inputText || !query}
+                    onClick={handleSubmit}
+                    disabled={loading || (!inputText && !repoUrl) || !query}
                 >
-                  {loading ? 'Processing...' : 'Submit'}
+                    {loading ? 'Processing...' : 'Submit'}
                 </Button>
-              </div>
+                </div>
             </div>
 
             {progress && (
